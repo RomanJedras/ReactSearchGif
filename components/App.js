@@ -1,8 +1,7 @@
 var GIPHY_API_URL = 'https://api.giphy.com';
 var GIPHY_PUB_KEY = 'bD0WwE93mSXQj0Fbdi6E5zPW4Fp5WwyE';
 
-App = React.createClass({
-	
+App = React.createClass ({
 	getInitialState() {
 		return {
 			loading: false,
@@ -11,56 +10,65 @@ App = React.createClass({
 		};
 	},
 	
-	handleSearch: function(searchingText) {  // 1. {/*Pobierz na wejściu wpisywany tekst.*/}
+	handleSearch: function (searchingText) {
 		this.setState({
-			loading: true  // 2. {/*Zasygnalizuj, że zaczął się proces ładowania.*/}
+			loading: true
 		});
-		this.getGif(searchingText, function(gif) {  // 3. {/*Rozpocznij pobieranie gifa.*/}
-			this.setState({  // 4 Na zakończenie pobierania:
-				loading: false,  // a przestań sygnalizować ładowanie,
-				gif: gif,  // b ustaw nowego gifa z wyniku pobierania,
-				searchingText: searchingText  // c ustaw nowy stan dla wyszukiwanego tekstu
+		this.getGif(searchingText).then(gif => {
+			this.setState({
+				loading: false,
+				gif: gif,
+				searchingText: searchingText
 			});
-		}.bind(this));
+		});
 	},
 	
-	getGif: function(searchingText, callback) {  // 1.
-		const url = GIPHY_API_URL + '/v1/gifs/random?api_key=' + GIPHY_PUB_KEY + '&tag=' + searchingText;  // 2.
-		let xhr = new XMLHttpRequest();  // 3.
-		xhr.open('GET', url);
-		xhr.onload = function() {
-			if (xhr.status === 200) {
-				let data = JSON.parse(xhr.responseText).data; // 4.
-				let gif = {  // 5.
-					url: data.fixed_width_downsampled_url,
-					sourceUrl: data.url
+	getGif: function(searchingText) {
+		return new Promise(
+			function (resolve, reject) {
+				const url = GIPHY_API_URL + '/v1/gifs/random?api_key=' + GIPHY_PUB_KEY + '&tag=' + searchingText;
+				const xhr = new XMLHttpRequest();
+				xhr.open('GET', url);
+				xhr.onload = function() {
+					if (xhr.status === 200) {
+						let data = JSON.parse(xhr.responseText).data;
+						console.log(data);
+						let gif = {
+							url: data.fixed_width_downsampled_url,
+							sourceUrl: data.url,
+							importData: data.import_datetime,
+							title: data.title
+						};
+						resolve(gif);
+					} else {
+						reject(new Error('Something went wrong'));
+					}
 				};
-				callback(gif);  // 6.
+				xhr.send();
 			}
-		};
-		xhr.send();
+		);
 	},
 	
 	render: function () {
-		let styles = {
+		var styles = {
 			margin: '0 auto',
 			textAlign: 'center',
-			width: '90%'
+			widht: '90%'
 		};
-		
 		return (
-			<div className={'searchMedia'}>
-				<h1> Wyszukiwarka gifów</h1>
-				<p>
-					Znajdź gifa na <a href={'http://giphy.com'} >Naciskaj ENTER, aby pobrać kolejne gify </a>
-				</p>
-				<Search onSearch={this.handleSearch} />
-				<Gif loading={this.state.loading}  url={this.state.gif.url} sourceUrl={this.state.gif.sourceUrl}
+			<div style={styles}>
+				<h1>Gif Engine!</h1>
+				<p>Find Gif on <a href='http://giphy.com'> giphy </a> .Press enter to get more gifs.</p>
+				<Search onSearch={this.handleSearch}/>
+				<Gif
+					loading={this.state.loading}
+					url={this.state.gif.url}
+					sourceUrl={this.state.gif.sourceUrl}
+					importData ={this.state.gif.importData}
+					title={this.state.gif.title}
 				/>
 			</div>
 		);
 	}
-	
 });
-
 
