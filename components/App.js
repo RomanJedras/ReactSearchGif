@@ -32,7 +32,6 @@ App = React.createClass ({
 				xhr.onload = function() {
 					if (xhr.status === 200) {
 						let data = JSON.parse(xhr.responseText).data;
-						console.log(data);
 						let gif = {
 							url: data.fixed_width_downsampled_url,
 							sourceUrl: data.url,
@@ -50,7 +49,7 @@ App = React.createClass ({
 	},
 	
 	render: function () {
-		var styles = {
+		const styles = {
 			margin: '0 auto',
 			textAlign: 'center',
 			widht: '90%'
